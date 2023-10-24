@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GPS Tracker</title>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script>
+      var reqcount = 0;
+      navigator.geolocation.watchPosition((position) => {
+        const { accuracy, latitude, longitude, altitude, heading, speed } =
+          position.coords;
+        const mapDiv = document.getElementById("map");
+        reqcount++
+        mapDiv.innerHTML = `<span>Accuracy: ${accuracy}</span><br/>`;
+        mapDiv.innerHTML += `<span>Latitude: ${latitude}</span><br/>`;
+        mapDiv.innerHTML += `<span>Longitude: ${longitude}</span><br/>`;
+        mapDiv.innerHTML += `<span>Altitude: ${altitude}</span><br/>`;
+        mapDiv.innerHTML += `<span>Heading: ${heading}</span><br/>`;
+        mapDiv.innerHTML += `<span>Speed: ${speed}</span><br/>`;
+        mapDiv.innerHTML += `<span>Request Count: ${reqcount}</span><br/>`;
+      });
+    </script>
+  </body>
+</html>
