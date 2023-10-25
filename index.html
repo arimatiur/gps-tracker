@@ -7,13 +7,25 @@
   </head>
   <body>
     <div id="map"></div>
+    <div>
+      <button id="sendButton">Click Me</button>
+    </div>
     <script>
       var reqcount = 0;
+      let accuracy1;
+      let latitude1;
+      let longitude2;
+      let altitude;
+      let heading;
+      let speed;
+      
       navigator.geolocation.watchPosition((position) => {
         const { accuracy, latitude, longitude, altitude, heading, speed } =
           position.coords;
+
         const mapDiv = document.getElementById("map");
-        reqcount++
+
+        reqcount++;
         mapDiv.innerHTML = `<span>Accuracy: ${accuracy}</span><br/>`;
         mapDiv.innerHTML += `<span>Latitude: ${latitude}</span><br/>`;
         mapDiv.innerHTML += `<span>Longitude: ${longitude}</span><br/>`;
@@ -21,6 +33,22 @@
         mapDiv.innerHTML += `<span>Heading: ${heading}</span><br/>`;
         mapDiv.innerHTML += `<span>Speed: ${speed}</span><br/>`;
         mapDiv.innerHTML += `<span>Request Count: ${reqcount}</span><br/>`;
+
+        accuracy1 = accuracy
+        latitude1 = latitude
+        longitude2 = longitude
+
+        
+      });
+
+      const sendButton = document.getElementById("sendButton");
+      const sendCoordinate = () => {
+        alert(
+          `Coordinate Latitude: ${latitude1} and Longitude : ${longitude2} has been sent with request count : ${reqcount}`
+        );
+      };
+      sendButton.addEventListener("click", () => {
+        sendCoordinate();
       });
     </script>
   </body>

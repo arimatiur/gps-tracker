@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link
+      rel="stylesheet"
+      href="https://js.arcgis.com/4.28/esri/themes/light/main.css"
+    />
+    <script src="https://js.arcgis.com/4.28/"></script>
+    <style>
+      html,
+      body,
+      #viewDiv {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+    <script>
+      require(["esri/config", "esri/Map", "esri/views/MapView"], (
+        esriConfig,
+        Map,
+        MapView
+      ) => {
+        const map = new Map({
+          basemap: "hybrid",
+        });
+
+        const mapView = new MapView({
+          map: map,
+          zoom: 15,
+          container: "viewDiv",
+        });
+
+        navigator.geolocation.watchPosition((position) => {
+          const { accuracy, latitude, longitude } = position.coords;
+          mapView.center = [longitude, latitude];
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <div id="viewDiv"></div>
+  </body>
+</html>
