@@ -18,6 +18,16 @@
         margin: 0;
         padding: 0;
       }
+
+      #posStatus {
+        height: auto;
+        width: auto;
+        top: 0;
+        right: 0;
+        z-index: 1;
+        position: absolute;
+        background-color: aqua;
+      }
     </style>
     <script>
       require([
@@ -26,57 +36,78 @@
         "esri/views/MapView",
         "esri/layers/GraphicsLayer",
         "esri/geometry/Point",
-        "esri/symbols/SimpleMarkerSymbol"
+        "esri/symbols/SimpleMarkerSymbol",
+        "esri/Graphic"
       ], (
         esriConfig,
         Map,
         MapView,
         GraphicsLayer,
         Point,
-        SimpleMarkerSymbol
+        SimpleMarkerSymbol,
+        Graphic
       ) => {
-        const graphicLayer = new GraphicsLayer();
-
         const map = new Map({
           basemap: "hybrid",
-          layers: [graphicLayer]
         });
 
         const mapView = new MapView({
           map: map,
           zoom: 15,
-          container: "viewDiv"
+          container: "viewDiv",
         });
 
+        var reqcount = 0;
+
+        const graphicLayer = new GraphicsLayer();
+        map.add(graphicLayer);
+
         navigator.geolocation.watchPosition((position) => {
-          const { accuracy, latitude, longitude } = position.coords;
+          const { accuracy, latitude, longitude, altitude, heading, speed } =
+            position.coords;
 
           const point = new Point({
             latitude: latitude,
-            longitude: longitude
+            longitude: longitude,
           });
 
           const symbol = new SimpleMarkerSymbol({
             style: "circle",
             color: "blue",
-            size: "10px"
+            size: "10px",
           });
 
-          const graphic = new GraphicsLayer({
+          // Create a Graphic with the point and symbol
+          const graphic = new Graphic({
             geometry: point,
-            symbol: symbol
+            symbol: symbol,
           });
 
+          // Clear the existing graphics from the layer
           graphicLayer.removeAll();
 
+          // Add the new graphic to the GraphicsLayer
           graphicLayer.add(graphic);
 
           mapView.center = [longitude, latitude];
+
+          const posStatus = document.getElementById("posStatus");
+
+          reqcount++;
+          posStatus.innerHTML = `<span>Accuracy: ${accuracy}</span><br/>`;
+          posStatus.innerHTML += `<span>Latitude: ${latitude}</span><br/>`;
+          posStatus.innerHTML += `<span>Longitude: ${longitude}</span><br/>`;
+          posStatus.innerHTML += `<span>Altitude: ${altitude}</span><br/>`;
+          posStatus.innerHTML += `<span>Heading: ${heading}</span><br/>`;
+          posStatus.innerHTML += `<span>Speed: ${speed}</span><br/>`;
+          posStatus.innerHTML += `<span>Request Count: ${reqcount}</span><br/>`;
         });
       });
     </script>
   </head>
   <body>
-    <div id="viewDiv"></div>
+    <div id="viewDiv">
+      <div id="posStatus"></div>
+    </div>
   </body>
 </html>
