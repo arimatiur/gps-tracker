@@ -20,23 +20,57 @@
       }
     </style>
     <script>
-      require(["esri/config", "esri/Map", "esri/views/MapView"], (
+      require([
+        "esri/config",
+        "esri/Map",
+        "esri/views/MapView",
+        "esri/layers/GraphicsLayer",
+        "esri/geometry/Point",
+        "esri/symbols/SimpleMarkerSymbol"
+      ], (
         esriConfig,
         Map,
-        MapView
+        MapView,
+        GraphicsLayer,
+        Point,
+        SimpleMarkerSymbol
       ) => {
+        const graphicLayer = new GraphicsLayer();
+
         const map = new Map({
           basemap: "hybrid",
+          layers: [graphicLayer]
         });
 
         const mapView = new MapView({
           map: map,
           zoom: 15,
-          container: "viewDiv",
+          container: "viewDiv"
         });
 
         navigator.geolocation.watchPosition((position) => {
           const { accuracy, latitude, longitude } = position.coords;
+
+          const point = new Point({
+            latitude: latitude,
+            longitude: longitude
+          });
+
+          const symbol = new SimpleMarkerSymbol({
+            style: "circle",
+            color: "blue",
+            size: "10px"
+          });
+
+          const graphic = new GraphicsLayer({
+            geometry: point,
+            symbol: symbol
+          });
+
+          graphicLayer.removeAll();
+
+          graphicLayer.add(graphic);
+
           mapView.center = [longitude, latitude];
         });
       });
