@@ -14,30 +14,73 @@
 		<style>
 			html,
 			body,
-			#mapDiv {
-				height: 100%;
+			#mainDiv {
 				width: 100%;
+				height: 100%;
+				display: flex;
+				flex-direction: column;
 				padding: 0;
 				margin: 0;
-				z-index: -999;
-				position: absolute;
+				background-color: rgb(63, 60, 60);
+			}
+			#mapDiv {
+				height: 70%;
+				width: 100%;
+			}
+			#controlerDiv {
+				height: 8%;
+				width: 100%;
+				background-color: darkcyan;
+				margin: 1% auto;
+				display: flex;
+				justify-items: center;
+				align-items: center;
 			}
 			#trackerDiv {
-				height: auto;
-				width: auto;
-				background-color: aqua;
+				height: 20%;
+				width: 100%;
+				background-color: rgb(148, 232, 232);
 				color: darkslategrey;
-				padding: 5px;
-				margin: 5px;
-				top: 0;
-				right: 0;
-				z-index: 999;
-				position: absolute;
+				padding-top: 5px;
 			}
 		</style>
 	</head>
 	<body>
-		<div id="mapDiv">
+		<div id="mainDiv">
+			<div id="mapDiv"></div>
+			<div id="controlerDiv">
+				<input
+					style="
+						font-size: x-large;
+						width: 50%;
+						margin-left: 2%;
+						margin-right: 2%;
+					"
+					type="text"
+				/>
+				<button
+					style="
+						border-radius: 10px;
+						font-size: x-large;
+						background-color: lightgreen;
+						margin-left: 2%;
+						margin-right: 2%;
+					"
+				>
+					START
+				</button>
+				<button
+					style="
+						border-radius: 10px;
+						font-size: x-large;
+						background-color: sienna;
+						margin-left: 2%;
+						margin-right: 2%;
+					"
+				>
+					STOP
+				</button>
+			</div>
 			<div id="trackerDiv"></div>
 		</div>
 
@@ -46,7 +89,7 @@
 
 			var map = L.map("mapDiv").setView(
 				[-6.175490901979208, 106.82709320110249],
-				15
+				12
 			);
 
 			var basemap = L.tileLayer(
@@ -77,8 +120,7 @@
 				trackerDiv.innerHTML += `<span>Speed: ${speed}</span><br/>`;
 				trackerDiv.innerHTML += `<span>Request Count: ${reqcount}</span><br/>`;
 
-				map.setView([latitude, longitude], 15);
-				marker.setLatLng([latitude, longitude])
+				marker.setLatLng([latitude, longitude]);
 			});
 		</script>
 	</body>
