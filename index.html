@@ -1,55 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GPS Tracker</title>
-  </head>
-  <body>
-    <div id="map"></div>
-    <div>
-      <button id="sendButton">Click Me</button>
-    </div>
-    <script>
-      var reqcount = 0;
-      let accuracy1;
-      let latitude1;
-      let longitude2;
-      let altitude;
-      let heading;
-      let speed;
-      
-      navigator.geolocation.watchPosition((position) => {
-        const { accuracy, latitude, longitude, altitude, heading, speed } =
-          position.coords;
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>GPS Tracker</title>
 
-        const mapDiv = document.getElementById("map");
+		<link
+			rel="stylesheet"
+			href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+		/>
+		<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 
-        reqcount++;
-        mapDiv.innerHTML = `<span>Accuracy: ${accuracy}</span><br/>`;
-        mapDiv.innerHTML += `<span>Latitude: ${latitude}</span><br/>`;
-        mapDiv.innerHTML += `<span>Longitude: ${longitude}</span><br/>`;
-        mapDiv.innerHTML += `<span>Altitude: ${altitude}</span><br/>`;
-        mapDiv.innerHTML += `<span>Heading: ${heading}</span><br/>`;
-        mapDiv.innerHTML += `<span>Speed: ${speed}</span><br/>`;
-        mapDiv.innerHTML += `<span>Request Count: ${reqcount}</span><br/>`;
+		<style>
+			html,
+			body,
+			#mapDiv {
+				height: 100%;
+				width: 100%;
+				padding: 0;
+				margin: 0;
+				z-index: -999;
+				position: absolute;
+			}
+			#trackerDiv {
+				height: auto;
+				width: auto;
+				background-color: aqua;
+				color: darkslategrey;
+				padding: 5px;
+				margin: 5px;
+				top: 0;
+				right: 0;
+				z-index: 999;
+				position: absolute;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="mapDiv">
+			<div id="trackerDiv"></div>
+		</div>
 
-        accuracy1 = accuracy
-        latitude1 = latitude
-        longitude2 = longitude
+		<script>
+			var reqcount = 0;
 
-        
-      });
+			var map = L.map("mapDiv").setView(
+				[-6.175490901979208, 106.82709320110249],
+				15
+			);
 
-      const sendButton = document.getElementById("sendButton");
-      const sendCoordinate = () => {
-        alert(
-          `Coordinate Latitude: ${latitude1} and Longitude : ${longitude2} has been sent with request count : ${reqcount}`
-        );
-      };
-      sendButton.addEventListener("click", () => {
-        sendCoordinate();
-      });
-    </script>
-  </body>
+			var basemap = L.tileLayer(
+				"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+				{
+					attribution: '&copy; <a href="http://www.example.com/">Example</a>',
+					maxNativeZoom: 19,
+					maxZoom: 22,
+				}
+			).addTo(map);
+
+			var marker = L.marker([-6.175490901979208, 106.82709320110249]).addTo(
+				map
+			);
+
+			navigator.geolocation.watchPosition((position) => {
+				const { accuracy, latitude, longitude, altitude, heading, speed } =
+					position.coords;
+
+				const trackerDiv = document.getElementById("trackerDiv");
+
+				reqcount++;
+				trackerDiv.innerHTML = `<span>Accuracy: ${accuracy}</span><br/>`;
+				trackerDiv.innerHTML += `<span>Latitude: ${latitude}</span><br/>`;
+				trackerDiv.innerHTML += `<span>Longitude: ${longitude}</span><br/>`;
+				trackerDiv.innerHTML += `<span>Altitude: ${altitude}</span><br/>`;
+				trackerDiv.innerHTML += `<span>Heading: ${heading}</span><br/>`;
+				trackerDiv.innerHTML += `<span>Speed: ${speed}</span><br/>`;
+				trackerDiv.innerHTML += `<span>Request Count: ${reqcount}</span><br/>`;
+
+				map.setView([latitude, longitude], 15);
+				marker.setLatLng([latitude, longitude])
+			});
+		</script>
+	</body>
 </html>
