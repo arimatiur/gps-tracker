@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>GPS-Tracker</title>
+		<link
+			rel="stylesheet"
+			href="https://js.arcgis.com/4.28/esri/themes/light/main.css"
+		/>
+		<script src="https://js.arcgis.com/4.28/"></script>
+
+		<style>
+			html,
+			body,
+			#mainDiv {
+				width: 100%;
+				height: 100%;
+				display: flex;
+				flex-direction: column;
+				padding: 0;
+				margin: 0;
+				background-color: rgb(63, 60, 60);
+			}
+			#mapDiv {
+				height: 68%;
+				width: 100%;
+			}
+			#controlerDiv {
+				height: 7%;
+				width: 100%;
+				background-color: darkcyan;
+				margin: 1% auto;
+				display: grid;
+				grid-template-areas: "col1 col1 col2 col3";
+				gap: 10px;
+				justify-items: center;
+				align-items: center;
+			}
+			#trackerDiv {
+				height: 25%;
+				width: 100%;
+				background-color: rgb(148, 232, 232);
+				color: darkslategrey;
+				padding-top: 5px;
+			}
+
+			.startTracking {
+				border-radius: 10px;
+				font-size: x-large;
+				background-color: #dfff00;
+				grid-area: col2;
+			}
+			.stopTracking {
+				border-radius: 10px;
+				font-size: x-large;
+				background-color: #e4d00a;
+				grid-area: col2;
+			}
+			#stopButton {
+				border-radius: 10px;
+				font-size: x-large;
+				background-color: #ee4b2b;
+				grid-area: col3;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="mainDiv">
+			<div id="mapDiv"></div>
+			<div id="controlerDiv">
+				<select
+					id="trackerSelect"
+					style="font-size: x-large; grid-area: col1"
+				></select>
+				<button id="startButton" class="stopTracking">START</button>
+				<button id="stopButton">STOP</button>
+			</div>
+			<div id="trackerDiv"></div>
+		</div>
+		<script>
+			require([
+				"esri/Map",
+				"esri/views/MapView",
+				"esri/Graphic",
+				"esri/layers/GraphicsLayer",
+				"esri/layers/FeatureLayer",
+				"esri/geometry/Point",
+			], (Map, MapView, Graphic, GraphicsLayer, FeatureLayer, Point) => {
+				var reqcount = 0;
+				var isTracking = false;
+				var featureLayerURL =
+					"https://services9.arcgis.com/rXp7iTn7z7rQwnaE/ArcGIS/rest/services/GPS_Point/FeatureServer/0";
+
+				var map = new Map({
+					basemap: "satellite",
+				});
+				var mapView = new MapView({
+					map: map,
+					center: [106.82709320110249, -6.175490901979208],
+					zoom: 15,
+					container: "mapDiv",
+				});
+				var featureLayer = new FeatureLayer({
+					url: "https://services9.arcgis.com/rXp7iTn7z7rQwnaE/ArcGIS/rest/services/GPS_Point/FeatureServer/0",
+				});
+
+				const getObjectIDs = () => {
+					fetch(
+						featureLayerURL + `/query?where=1=1&outFields=OBJECTID,PCODE&f=json`
+					)
+						.then((response) => response.json())
+						.then((data) => {
+							const getDatas = data.features.map((feature) => {
+								return {
+									ObjectID: feature.attributes.OBJECTID,
+									PCODE: feature.attributes.PCODE,
+								};
+							});
+							trackerSelect.innerHTML = "";
+							getDatas.forEach((getData) => {
+								const option = document.createElement("option");
+								option.value = getData.ObjectID;
+								option.innerText = getData.PCODE;
+								trackerSelect.appendChild(option);
+							});
+						})
+						.catch((error) => {
+							console.error("Error fetching ObjectIDs: " + error);
+						});
+				};
+				getObjectIDs();
+
+				//Fucntion to start tracking
+				var startTracking = () => {
+					if (!isTracking) {
+						isTracking = true;
+						watchId = navigator.geolocation.watchPosition(
+							sendLocationToFeatureService
+						);
+						startButton.className = "startTracking";
+						trackerSelect.disabled = true;
+						alert("Start Tracking : " + trackerSelect.value);
+					}
+				};
+				var startButton = document.getElementById("startButton");
+				startButton.addEventListener("click", () => startTracking());
+
+				//Fucntion to stop tracking
+				var stopTracking = () => {
+					if (isTracking) {
+						isTracking = false;
+						navigator.geolocation.clearWatch(watchId);
+						startButton.className = "stopTracking";
+						trackerSelect.disabled = false;
+						reqcount = 0;
+						trackerDiv.innerHTML = "";
+						alert("Stop Tracking : " + trackerSelect.value);
+					}
+				};
+				var stopButton = document.getElementById("stopButton");
+				stopButton.addEventListener("click", () => stopTracking());
+
+				const sendLocationToFeatureService = (position) => {
+					const { accuracy, latitude, longitude, altitude, heading, speed } =
+						position.coords;
+
+					map.removeAll();
+					var userLocation = new Graphic({
+						geometry: new Point({
+							latitude: latitude,
+							longitude: longitude,
+						}),
+						symbol: {
+							type: "simple-marker",
+							style: "circle",
+							color: "lightblue",
+							size: "12px",
+						},
+						attributes: {
+							OBJECTID: trackerSelect.value,
+							PCODE: trackerSelect.options[trackerSelect.selectedIndex].text,
+							Accuracy: accuracy,
+							Latitude: latitude,
+							Longitude: longitude,
+							Altitude: altitude,
+							Heading: heading,
+							Speed: speed,
+							Counter: reqcount,
+						},
+					});
+					var graphicUserLocation = new GraphicsLayer({
+						graphics: userLocation,
+					});
+					map.add(graphicUserLocation);
+					mapView.goTo({
+						center: [longitude, latitude],
+						zoom: 18,
+					});
+
+					featureLayer.applyEdits({
+						updateFeatures: [userLocation],
+					}).then((editsResult) => {
+                        if (
+                            editsResult.updateFeatureResults.length > 0 &&
+                            !editsResult.updateFeatureResults[0].error
+                        ) {
+                            console.log("Feature updated successfully");
+                        } else {
+                            console.error(
+                                "Error updating feature:",
+                                editsResult.updateFeatureResults[0].error
+                            );
+                        }
+					});
+
+					reqcount++;
+					trackerDiv.innerHTML = `<span>Accuracy: ${accuracy}</span><br/>`;
+					trackerDiv.innerHTML += `<span>Latitude: ${latitude}</span><br/>`;
+					trackerDiv.innerHTML += `<span>Longitude: ${longitude}</span><br/>`;
+					trackerDiv.innerHTML += `<span>Altitude: ${altitude}</span><br/>`;
+					trackerDiv.innerHTML += `<span>Heading: ${heading}</span><br/>`;
+					trackerDiv.innerHTML += `<span>Speed: ${speed}</span><br/>`;
+					trackerDiv.innerHTML += `<span>Request Count: ${reqcount}</span><br/>`;
+					trackerDiv.innerHTML += `<span>Point Code: ${userLocation.attributes.PCODE}</span><br/>`;
+				};
+			});
+		</script>
+	</body>
+</html>
