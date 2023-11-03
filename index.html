@@ -195,7 +195,10 @@
           "headers": {
             "Content-Type": "application/x-www-form-urlencoded",
           },
-          "payload": "features=%7B%22geometry%22%3A%7B%22x%22%3A106.924067%2C%22y%22%3A-6.2446807%7D%2C%22attributes%22%3A%7B%22OBJECTID%22%3A%222%22%2C%22PCODE%22%3A%22Ari-002%22%2C%22Accuracy%22%3A1595.22766557888%2C%22Latitude%22%3A-6.2446807%2C%22Longitude%22%3A106.924067%2C%22Altitude%22%3Anull%2C%22Heading%22%3Anull%2C%22Speed%22%3Anull%2C%22Counter%22%3A0%7D%7D&rollbackOnFailure=true&f=pjson&token=",
+          "payload": {
+            "f": "pjson",
+            "features": JSON.stringify(updatedPoint)
+          },
         }
 
         console.log(JSON.stringify(updatedPoint));
